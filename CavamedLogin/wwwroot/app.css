@@ -1,51 +1,184 @@
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+/* === FOTOÐRAFLI & YUMUÞAK GEÇÝÞLÝ FÝNAL LOGIN TASARIMI === */
+
+body {
+    margin: 0;
 }
 
-a, .btn-link {
-    color: #006bb7;
+.login-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+/* --- SOL PANEL (DÝNAMÝK FOTOÐRAF GEÇÝÞÝ) --- */
+.login-image-panel {
+    flex: 1;
+    position: relative; /* Ýçerideki katmanlarý konumlandýrmak için */
+    background-color: #1a1a1a; /* Resimler yüklenemezse görünecek koyu renk */
+    overflow: hidden; /* Taþmalarý engeller */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+/* Her bir fotoðraf katmaný için ortak stil */
+.bg-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0; /* Baþlangýçta hepsi görünmez */
+    animation: crossfade 21s infinite; /* 21 saniyelik sonsuz animasyon */
 }
 
-.content {
-    padding-top: 1.1rem;
+/* Kendi Jpeg dosyalarýnýzý burada belirtin */
+.bg-layer-1 {
+    background-image: url('../images/bg1.jpeg');
+    animation-delay: 0s;
 }
 
-h1:focus {
-    outline: none;
+.bg-layer-2 {
+    background-image: url('../images/bg2.jpeg');
+    animation-delay: 7s;
 }
-
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+/* 7 saniye sonra baþla */
+.bg-layer-3 {
+    background-image: url('../images/bg3.jpeg');
+    animation-delay: 14s;
 }
+/* 14 saniye sonra baþla */
 
-.invalid {
-    outline: 1px solid #e50000;
-}
-
-.validation-message {
-    color: #e50000;
-}
-
-.blazor-error-boundary {
-    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
-    padding: 1rem 1rem 1rem 3.7rem;
-    color: white;
-}
-
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
+/* Opaklýk deðiþtirerek yumuþak geçiþi saðlayan animasyon */
+@keyframes crossfade {
+    0% {
+        opacity: 0;
     }
 
-.darker-border-checkbox.form-check-input {
-    border-color: #929292;
+    10% {
+        opacity: 1;
+    }
+    /* 2 saniyede görünür ol */
+    33% {
+        opacity: 1;
+    }
+    /* 5 saniye bekle */
+    43% {
+        opacity: 0;
+    }
+    /* 2 saniyede kaybol */
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Marka baþlýðý (her zaman en üstte) */
+.login-brand-title {
+    position: relative;
+    z-index: 2; /* Arka plan katmanlarýnýn üzerinde kalmasýný saðlar */
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 300;
+    letter-spacing: 2px;
+    border: 2px solid white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    background-color: rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
+}
+
+/* --- Sað Panel Stilleri (Deðiþiklik yok) --- */
+.login-form-panel {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+}
+
+    .login-card h2 {
+        font-size: 2rem;
+        font-weight: 600;
+    }
+
+    .login-card .subtitle {
+        margin-bottom: 2.5rem;
+        color: #6c757d;
+    }
+
+.login-btn {
+    padding: 0.85rem 1rem;
+    font-weight: 600;
+}
+
+.login-links {
+    margin-top: 2rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 992px) {
+    .login-image-panel {
+        display: none;
+    }
+}
+/*
+  "fade-in-up" animasyonunu tanýmlar.
+  'from' durumu: öðe 20 piksel aþaðýda ve tamamen þeffaf.
+  'to' durumu: öðe orijinal konumunda ve tamamen görünür.
+*/
+@keyframes fadeInUp {
+    from {
+        transform: translate3d(0, 20px, 0);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+    }
+}
+
+/*
+  Animasyon uygulanacak öðeler için temel sýnýf.
+  Baþlangýçta öðeleri gizler ve animasyon ayarlarýný yapar.
+*/
+.fade-in-up {
+    opacity: 0; /* Animasyon baþlangýcýnda öðeyi þeffaf yapar */
+    animation-name: fadeInUp; /* Uygulanacak @keyframes kuralýnýn adýný belirtir */
+    animation-duration: 0.8s; /* Animasyonun ne kadar süreceðini ayarlar */
+    animation-fill-mode: forwards; /* Animasyon bittiðinde son halinde kalmasýný saðlar */
+    animation-timing-function: ease-out; /* Animasyonun hýz eðrisini belirler (hýzlý baþlayýp yavaþlar) */
+}
+
+/*
+  Animasyonun baþlangýcýný geciktiren sýnýflar.
+  Bu, öðelerin sýrayla görünmesini saðlar.
+*/
+.delay-1 {
+    animation-delay: 0.2s;
+}
+
+.delay-2 {
+    animation-delay: 0.4s;
+}
+
+.delay-3 {
+    animation-delay: 0.6s;
+}
+
+.delay-4 {
+    animation-delay: 0.8s;
+}
+
+.delay-5 {
+    animation-delay: 1s;
 }

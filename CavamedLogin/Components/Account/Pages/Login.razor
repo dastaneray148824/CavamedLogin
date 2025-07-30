@@ -1,73 +1,82 @@
 ﻿@page "/Account/Login"
-@using Microsoft.Extensions.Localization
+@layout EmptyLayout
+
 @using System.ComponentModel.DataAnnotations
-@using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
-@using CavamedLogin.Data
-@using Microsoft.AspNetCore.Authentication
+@using CavamedLogin.Data @* Bu satırın doğru olduğundan emin olun *@
 
 @inject SignInManager<ApplicationUser> SignInManager
-@inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
-@inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Log in</PageTitle>
+<PageTitle>Giriş Yap</PageTitle>
 
-<h1>Log in</h1>
-<div class="row">
-    <div class="col-md-4">
-        <section>
-            <StatusMessage Message="@errorMessage" />
-            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+<div class="login-container">
+
+    <!-- SOL TARAF: KATMANLI FOTOĞRAF PANELİ -->
+    <div class="login-image-panel">
+        <!-- Fotoğraf katmanları -->
+        <div class="bg-layer bg-layer-1"></div>
+        <div class="bg-layer bg-layer-2"></div>
+        <div class="bg-layer bg-layer-3"></div>
+
+        <!-- Marka başlığı (en üstte) -->
+        <div class="login-brand-title">
+            CAVAMED
+        </div>
+    </div>
+
+    <!-- SAĞ TARAF: FORM PANELİ (Aynı kalabilir) -->
+    <div class="login-form-panel">
+        <div class="login-card">
+
+            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login" novalidate>
                 <DataAnnotationsValidator />
-                <MudPaper Class="pa-8" Elevation="3" align="center">
-                    <h2>Use a local account to log in.</h2>
-                    <hr />
-                    <ValidationSummary class="text-danger" role="alert" />
-                    <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                        <label for="email" class="form-label">Email</label>
-                        <ValidationMessage For="() => Input.Email" class="text-danger" />
-                    </div>
-                    <div class="form-floating mb-3">
-                        <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                        <label for="password" class="form-label">Password</label>
-                        <ValidationMessage For="() => Input.Password" class="text-danger" />
-                    </div>
-                    <div class="checkbox mb-3">
-                        <label class="form-label">
-                            <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
-                            Remember me
-                        </label>
-                    </div>
-                    <div>
-                        <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                    </div>
-                    <div>
-                        <p>
-                            <a href="Account/ForgotPassword">Forgot your password?</a>
-                        </p>
-                        <p>
-                            <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
-                        </p>
-                        <p>
-                            <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
-                        </p>
-                    </div>
-                </MudPaper>
-               
-            </EditForm>
-        </section>
-    </div>
-   
-    </div>
 
+                <h2 class="fade-in-up">Tekrar Hoş Geldiniz!</h2>
+                <p class="subtitle fade-in-up delay-1">Kayıt olarak devam ediniz.</p>
+
+                <ValidationSummary class="text-danger small" role="alert" />
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">@errorMessage</div>
+                }
+
+                <div class="form-floating mb-3 fade-in-up delay-3">
+                    <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="E-posta" />
+                    <label for="email" class="form-label">E-posta</label>
+                    <ValidationMessage For="() => Input.Email" class="text-danger small" />
+                </div>
+
+                <div class="form-floating mb-4 fade-in-up delay-4">
+                    <InputText id="password" type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Şifre" />
+                    <label for="password" class="form-label">Şifre</label>
+                    <ValidationMessage For="() => Input.Password" class="text-danger small" />
+                </div>
+
+                <div class="form-check mb-4 fade-in-up delay-5">
+                    <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input" id="rememberMeCheck" />
+                    <label class="form-check-label" for="rememberMeCheck">Beni Hatırla</label>
+                </div>
+
+                <div class="d-grid fade-in-up delay-5">
+                    <button type="submit" class="btn btn-primary btn-lg login-btn">GİRİŞ YAP</button>
+                </div>
+
+                <div class="login-links text-center mt-4 fade-in-up delay-5">
+                    <p>
+                        <a href="Account/ForgotPassword">Şifrenizi mi unuttunuz?</a>
+                        <a href="Account/Register">Kayıt Ol</a>
+                    </p>
+                </div>
+
+            </EditForm>
+        </div>
+    </div>
+</div>
 
 @code {
+    // ... Bu bölümü değiştirmeyin ...
     private string? errorMessage;
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
@@ -75,53 +84,30 @@
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (HttpMethods.IsGet(HttpContext.Request.Method))
-        {
-            // Clear the existing external cookie to ensure a clean login process
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-        }
-    }
-
     public async Task LoginUser()
     {
-        // This doesn't count login failures towards account lockout
-        // To enable password failures to trigger account lockout, set lockoutOnFailure: true
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
-            Logger.LogInformation("User logged in.");
-            RedirectManager.RedirectTo("/Account/Manage");
-        }
-        else if (result.RequiresTwoFactor)
-        {
-            RedirectManager.RedirectTo(
-                "Account/LoginWith2fa",
-                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
-        }
-        else if (result.IsLockedOut)
-        {
-            Logger.LogWarning("User account locked out.");
-            RedirectManager.RedirectTo("Account/Lockout");
+            NavigationManager.NavigateTo("/Account/Manage");
         }
         else
         {
-            errorMessage = "Error: Invalid login attempt.";
+            errorMessage = "Hatalı e-posta veya şifre girdiniz.";
         }
     }
 
     private sealed class InputModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "E-posta alanı zorunludur.")]
+        [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz.")]
         public string Email { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "Şifre alanı zorunludur.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 
-        [Display(Name = "Remember me?")]
+        [Display(Name = "Beni Hatırla")]
         public bool RememberMe { get; set; }
     }
 }
