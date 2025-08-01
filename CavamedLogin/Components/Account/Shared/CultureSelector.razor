@@ -1,0 +1,31 @@
+﻿@* Shared/CultureSelector.razor (YAN YANA İKİ BAYRAK VERSİYONU) *@
+
+@using System.Globalization
+@inject NavigationManager Navigation
+
+<div class="d-flex align-items-center">
+
+    @* Türkçe Bayrağı Formu *@
+    <form action="/Culture/Set" method="post" class="d-inline">
+        <input type="hidden" name="redirectUri" value="@RelativeRedirectUri" />
+        <input type="hidden" name="culture" value="tr-TR" />
+        <button type="submit" class="culture-button" title="Türkçe'ye Geç">
+            <span class="flag-icon flag-icon-tr"></span>
+        </button>
+    </form>
+
+    @* İngilizce Bayrağı Formu *@
+    <form action="/Culture/Set" method="post" class="d-inline">
+        <input type="hidden" name="redirectUri" value="@RelativeRedirectUri" />
+        <input type="hidden" name="culture" value="en-US" />
+        <button type="submit" class="culture-button" title="Switch to English">
+            <span class="flag-icon flag-icon-gb"></span> @* İngilizce için İngiltere bayrağı *@
+        </button>
+    </form>
+
+</div>
+
+@code {
+    // Bu property, tam adresten sadece /Account/Login gibi yerel yolu alır.
+    private string RelativeRedirectUri => new Uri(Navigation.Uri).PathAndQuery;
+}
