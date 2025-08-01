@@ -1,6 +1,6 @@
 ﻿@page "/Account/Register"
 @layout EmptyLayout
-
+@using Microsoft.Extensions.Localization
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using CavamedLogin.Data
 
+@inject IStringLocalizer<Login> L
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
 @inject SignInManager<ApplicationUser> SignInManager
@@ -40,33 +41,33 @@
             <StatusMessage Message="@Message" />
             <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register" novalidate>
                 <DataAnnotationsValidator />
-                <h2 class="fade-in-up">Tekrar Hoş Geldiniz!</h2>
-                <p class="subtitle fade-in-up delay-1">Hesabınıza Kayıt yaparak devam edin.</p>
+                <h2 class="fade-in-up">@L["WelcomeBack"]</h2>
+                <p class="subtitle fade-in-up delay-1">@L["Continue by registering"]</p>
 
                 <ValidationSummary class="text-danger" role="alert" />
                 <div class="form-floating mb-3 fade-in-up delay-2">
                     <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="E-posta" />
-                    <label for="email" class="form-label">E-posta</label>
+                    <label for="email" class="form-label">@L["Email"]</label>
                     <ValidationMessage For="() => Input.Email" class="text-danger small" />
                 </div>
 
                 <div class="form-floating mb-4 fade-in-up delay-3">
                     <InputText id="password" type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Şifre" />
-                    <label for="password" class="form-label">Şifre</label>
+                    <label for="password" class="form-label">@L["Password"]</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger small" />
                 </div>
                 <div class="form-floating mb-4 fade-in-up delay-3">
                     <InputText id="password" type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Şifre" />
-                    <label for="password" class="form-label">Şifre</label>
+                    <label for="password" class="form-label">@L["ConfirmPassword"]</label>
                     <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger small" />
                 </div>
 
                 <div class="d-grid fade-in-up delay-5">
-                    <button type="submit" class="btn btn-primary btn-lg login-btn">Kayıt Ol</button>
+                    <button type="submit" class="btn btn-primary btn-lg login-btn">@L["Register"]</button>
                 </div>
                 <br />
                 <p>
-                    <a href="/Account/Login">Giriş Yap</a>
+                    <a href="/Account/Login">@L["LoginButton"]</a>
                 </p>
             </EditForm>
         </div>

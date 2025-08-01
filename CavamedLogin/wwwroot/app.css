@@ -1,4 +1,4 @@
-/* === FOTOĞRAFLI & YUMUŞAK GEÇİŞLİ FİNAL LOGIN TASARIMI === */
+ï»¿/* === FOTOÃRAFLI & YUMUÃAK GEÃ‡ÃÃLÃ FÃNAL LOGIN TASARIMI === */
 
 body {
     margin: 0;
@@ -10,19 +10,19 @@ body {
     height: 100vh;
 }
 
-/* --- SOL PANEL (DİNAMİK FOTOĞRAF GEÇİŞİ) --- */
+/* --- SOL PANEL (DÃNAMÃK FOTOÃRAF GEÃ‡ÃÃÃ) --- */
 .login-image-panel {
     flex: 1;
-    position: relative; /* İçerideki katmanları konumlandırmak için */
-    background-color: #1a1a1a; /* Resimler yüklenemezse görünecek koyu renk */
-    overflow: hidden; /* Taşmaları engeller */
+    position: relative; /* ÃÃ§erideki katmanlarÃ½ konumlandÃ½rmak iÃ§in */
+    background-color: #1a1a1a; /* Resimler yÃ¼klenemezse gÃ¶rÃ¼necek koyu renk */
+    overflow: hidden; /* TaÃ¾malarÃ½ engeller */
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
 }
 
-/* Her bir fotoğraf katmanı için ortak stil */
+/* Her bir fotoÃ°raf katmanÃ½ iÃ§in ortak stil */
 .bg-layer {
     position: absolute;
     top: 0;
@@ -31,11 +31,11 @@ body {
     height: 100%;
     background-size: cover;
     background-position: center;
-    opacity: 0; /* Başlangıçta hepsi görünmez */
+    opacity: 0; /* BaÃ¾langÃ½Ã§ta hepsi gÃ¶rÃ¼nmez */
     animation: crossfade 21s infinite; /* 21 saniyelik sonsuz animasyon */
 }
 
-/* Kendi Jpeg dosyalarınızı burada belirtin */
+/* Kendi Jpeg dosyalarÃ½nÃ½zÃ½ burada belirtin */
 .bg-layer-1 {
     background-image: url('../images/bg1.jpeg');
     animation-delay: 0s;
@@ -45,14 +45,14 @@ body {
     background-image: url('../images/bg2.jpeg');
     animation-delay: 7s;
 }
-/* 7 saniye sonra başla */
+/* 7 saniye sonra baÃ¾la */
 .bg-layer-3 {
     background-image: url('../images/bg3.jpeg');
     animation-delay: 14s;
 }
-/* 14 saniye sonra başla */
+/* 14 saniye sonra baÃ¾la */
 
-/* Opaklık değiştirerek yumuşak geçişi sağlayan animasyon */
+/* OpaklÃ½k deÃ°iÃ¾tirerek yumuÃ¾ak geÃ§iÃ¾i saÃ°layan animasyon */
 @keyframes crossfade {
     0% {
         opacity: 0;
@@ -61,7 +61,7 @@ body {
     10% {
         opacity: 1;
     }
-    /* 2 saniyede görünür ol */
+    /* 2 saniyede gÃ¶rÃ¼nÃ¼r ol */
     33% {
         opacity: 1;
     }
@@ -75,10 +75,10 @@ body {
     }
 }
 
-/* Marka başlığı (her zaman en üstte) */
+/* Marka baÃ¾lÃ½Ã°Ã½ (her zaman en Ã¼stte) */
 .login-brand-title {
     position: relative;
-    z-index: 2; /* Arka plan katmanlarının üzerinde kalmasını sağlar */
+    z-index: 2; /* Arka plan katmanlarÃ½nÃ½n Ã¼zerinde kalmasÃ½nÃ½ saÃ°lar */
     color: white;
     font-size: 2.5rem;
     font-weight: 300;
@@ -90,7 +90,7 @@ body {
     backdrop-filter: blur(5px);
 }
 
-/* --- Sağ Panel Stilleri (Değişiklik yok) --- */
+/* --- SaÃ° Panel Stilleri (DeÃ°iÃ¾iklik yok) --- */
 .login-form-panel {
     flex: 1;
     display: flex;
@@ -131,9 +131,9 @@ body {
     }
 }
 /*
-  "fade-in-up" animasyonunu tanımlar.
-  'from' durumu: öğe 20 piksel aşağıda ve tamamen şeffaf.
-  'to' durumu: öğe orijinal konumunda ve tamamen görünür.
+  "fade-in-up" animasyonunu tanÃ½mlar.
+  'from' durumu: Ã¶Ã°e 20 piksel aÃ¾aÃ°Ã½da ve tamamen Ã¾effaf.
+  'to' durumu: Ã¶Ã°e orijinal konumunda ve tamamen gÃ¶rÃ¼nÃ¼r.
 */
 @keyframes fadeInUp {
     from {
@@ -148,20 +148,20 @@ body {
 }
 
 /*
-  Animasyon uygulanacak öğeler için temel sınıf.
-  Başlangıçta öğeleri gizler ve animasyon ayarlarını yapar.
+  Animasyon uygulanacak Ã¶Ã°eler iÃ§in temel sÃ½nÃ½f.
+  BaÃ¾langÃ½Ã§ta Ã¶Ã°eleri gizler ve animasyon ayarlarÃ½nÃ½ yapar.
 */
 .fade-in-up {
-    opacity: 0; /* Animasyon başlangıcında öğeyi şeffaf yapar */
-    animation-name: fadeInUp; /* Uygulanacak @keyframes kuralının adını belirtir */
-    animation-duration: 0.8s; /* Animasyonun ne kadar süreceğini ayarlar */
-    animation-fill-mode: forwards; /* Animasyon bittiğinde son halinde kalmasını sağlar */
-    animation-timing-function: ease-out; /* Animasyonun hız eğrisini belirler (hızlı başlayıp yavaşlar) */
+    opacity: 0; /* Animasyon baÃ¾langÃ½cÃ½nda Ã¶Ã°eyi Ã¾effaf yapar */
+    animation-name: fadeInUp; /* Uygulanacak @keyframes kuralÃ½nÃ½n adÃ½nÃ½ belirtir */
+    animation-duration: 0.8s; /* Animasyonun ne kadar sÃ¼receÃ°ini ayarlar */
+    animation-fill-mode: forwards; /* Animasyon bittiÃ°inde son halinde kalmasÃ½nÃ½ saÃ°lar */
+    animation-timing-function: ease-out; /* Animasyonun hÃ½z eÃ°risini belirler (hÃ½zlÃ½ baÃ¾layÃ½p yavaÃ¾lar) */
 }
 
 /*
-  Animasyonun başlangıcını geciktiren sınıflar.
-  Bu, öğelerin sırayla görünmesini sağlar.
+  Animasyonun baÃ¾langÃ½cÃ½nÃ½ geciktiren sÃ½nÃ½flar.
+  Bu, Ã¶Ã°elerin sÃ½rayla gÃ¶rÃ¼nmesini saÃ°lar.
 */
 .delay-1 {
     animation-delay: 0.2s;
