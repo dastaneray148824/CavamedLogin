@@ -1,28 +1,23 @@
-﻿/* === FOTOÐRAFLI & YUMUÞAK GEÇÝÞLÝ FÝNAL LOGIN TASARIMI === */
-
+﻿/* Reset ve temel ayarlar */
 body {
     margin: 0;
+    padding: 0;
+    overflow: hidden; /* Taşmaları gizle */
 }
 
-.login-container {
-    display: flex;
+/* ————————————————
+   ARKA PLAN: TÜM SAYFAYA KAPLAYAN SLAYT GEÇİŞİ
+   ———————————————— */
+.login-image-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100vw;
     height: 100vh;
+    z-index: -1; /* Form panelinin arkasında kalsın */
+    overflow: hidden;
 }
 
-/* --- SOL PANEL (DÝNAMÝK FOTOÐRAF GEÇÝÞÝ) --- */
-.login-image-panel {
-    flex: 1;
-    position: relative; /* Ýçerideki katmanlarý konumlandýrmak için */
-    background-color: #1a1a1a; /* Resimler yüklenemezse görünecek koyu renk */
-    overflow: hidden; /* Taþmalarý engeller */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-/* Her bir fotoðraf katmaný için ortak stil */
 .bg-layer {
     position: absolute;
     top: 0;
@@ -31,11 +26,10 @@ body {
     height: 100%;
     background-size: cover;
     background-position: center;
-    opacity: 0; /* Baþlangýçta hepsi görünmez */
-    animation: crossfade 21s infinite; /* 21 saniyelik sonsuz animasyon */
+    opacity: 0;
+    animation: crossfade 21s infinite;
 }
 
-/* Kendi Jpeg dosyalarýnýzý burada belirtin */
 .bg-layer-1 {
     background-image: url('../images/bg1.jpeg');
     animation-delay: 0s;
@@ -45,14 +39,12 @@ body {
     background-image: url('../images/bg2.jpeg');
     animation-delay: 7s;
 }
-/* 7 saniye sonra baþla */
+
 .bg-layer-3 {
     background-image: url('../images/bg3.jpeg');
     animation-delay: 14s;
 }
-/* 14 saniye sonra baþla */
 
-/* Opaklýk deðiþtirerek yumuþak geçiþi saðlayan animasyon */
 @keyframes crossfade {
     0% {
         opacity: 0;
@@ -61,80 +53,97 @@ body {
     10% {
         opacity: 1;
     }
-    /* 2 saniyede görünür ol */
+
     33% {
         opacity: 1;
     }
-    /* 5 saniye bekle */
+
     43% {
         opacity: 0;
     }
-    /* 2 saniyede kaybol */
+
     100% {
         opacity: 0;
     }
 }
 
-/* Marka baþlýðý (her zaman en üstte) */
-.login-brand-title {
+/* ————————————————
+   KONTEYNER: CARD’I ORTALA
+   ———————————————— */
+.login-container {
     position: relative;
-    z-index: 2; /* Arka plan katmanlarýnýn üzerinde kalmasýný saðlar */
-    color: white;
-    font-size: 2.5rem;
-    font-weight: 300;
-    letter-spacing: 2px;
-    border: 2px solid white;
-    padding: 1rem 2rem;
-    border-radius: 8px;
-    background-color: rgba(0,0,0,0.4);
-    backdrop-filter: blur(5px);
-}
-
-/* --- Sað Panel Stilleri (Deðiþiklik yok) --- */
-.login-form-panel {
-    flex: 1;
     display: flex;
-    justify-content: center;
     align-items: center;
-    padding: 2rem;
-    background-color: #f8f9fa;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1; /* Form panel üstte olsun */
 }
 
-.login-card {
+/* ————————————————
+   FORM PANEL: ARKA PLAN VE STİL
+   ———————————————— */
+.login-form-panel {
+    flex: none;
     width: 100%;
     max-width: 420px;
+    background-color: rgba(255, 255, 255, 0.90); /* Yarı saydam beyaz */
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-    .login-card h2 {
-        font-size: 2rem;
-        font-weight: 600;
-    }
+.login-card h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
 
-    .login-card .subtitle {
-        margin-bottom: 2.5rem;
-        color: #6c757d;
-    }
+.login-card .subtitle {
+    margin-bottom: 2rem;
+    color: #6c757d;
+}
 
+.form-control {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid #ccc;
+}
+
+/* Butonlar */
 .login-btn {
     padding: 0.85rem 1rem;
     font-weight: 600;
 }
 
+/* Alt linkler */
 .login-links {
-    margin-top: 2rem;
+    margin-top: 1.5rem;
     font-size: 0.9rem;
 }
 
+    .login-links a {
+        color: #007bff;
+        margin: 0 0.5rem;
+    }
+
+        .login-links a:hover {
+            color: #0056b3;
+        }
+
+/* Responsive: mobilde sadece form görünür */
 @media (max-width: 992px) {
+    body {
+        overflow: auto;
+    }
+
     .login-image-panel {
         display: none;
     }
 }
-/*
-  "fade-in-up" animasyonunu tanýmlar.
-  'from' durumu: öðe 20 piksel aþaðýda ve tamamen þeffaf.
-  'to' durumu: öðe orijinal konumunda ve tamamen görünür.
-*/
+
+/* ————————————————
+   İSTEĞE BAĞLI: fade-in-up Animasyonu
+   ———————————————— */
 @keyframes fadeInUp {
     from {
         transform: translate3d(0, 20px, 0);
@@ -147,22 +156,14 @@ body {
     }
 }
 
-/*
-  Animasyon uygulanacak öðeler için temel sýnýf.
-  Baþlangýçta öðeleri gizler ve animasyon ayarlarýný yapar.
-*/
 .fade-in-up {
-    opacity: 0; /* Animasyon baþlangýcýnda öðeyi þeffaf yapar */
-    animation-name: fadeInUp; /* Uygulanacak @keyframes kuralýnýn adýný belirtir */
-    animation-duration: 0.8s; /* Animasyonun ne kadar süreceðini ayarlar */
-    animation-fill-mode: forwards; /* Animasyon bittiðinde son halinde kalmasýný saðlar */
-    animation-timing-function: ease-out; /* Animasyonun hýz eðrisini belirler (hýzlý baþlayýp yavaþlar) */
+    opacity: 0;
+    animation-name: fadeInUp;
+    animation-duration: 0.8s;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease-out;
 }
 
-/*
-  Animasyonun baþlangýcýný geciktiren sýnýflar.
-  Bu, öðelerin sýrayla görünmesini saðlar.
-*/
 .delay-1 {
     animation-delay: 0.2s;
 }
