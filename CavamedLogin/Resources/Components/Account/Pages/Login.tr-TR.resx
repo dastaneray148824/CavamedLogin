@@ -147,4 +147,25 @@
   <data name="WelcomeBack" xml:space="preserve">
     <value>Hoşgeldiniz</value>
   </data>
+  <data name="Next" xml:space="preserve">
+    <value>İleri</value>
+  </data>
+  <data name="Sign In" xml:space="preserve">
+    <value>Oturum Açın</value>
+  </data>
+  <data name="Gmail Info" xml:space="preserve">
+    <value> Devam etmek için Cavamed Hesabınızla oturum açın.</value>
+  </data>
+  <data name="To continue, first verify your identity" xml:space="preserve">
+    <value>Devam etmek için öncelikle kimliğinizi doğrulayın</value>
+  </data>
+  <data name="EMail" xml:space="preserve">
+    <value>E-Posta</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>İsim</value>
+  </data>
+  <data name="Surname" xml:space="preserve">
+    <value>Soyisim</value>
+  </data>
 </root>

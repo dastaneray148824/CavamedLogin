@@ -1,0 +1,38 @@
+﻿@page "/test"
+@using System.ComponentModel.DataAnnotations
+
+<h3>Test Formu</h3>
+
+<EditForm Model="@model" FormName="test" OnValidSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="email">E-posta:</label>
+        <InputText id="email"
+                   class="form-control"
+                   @bind-Value="model.Email"
+                   @bind-Value:event="oninput" />
+        <ValidationMessage For="@(() => model.Email)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Gönder</button>
+</EditForm>
+
+<p>Girilen email: @model.Email</p>
+
+@code {
+    private EmailModel model = new();
+
+    private void OnSubmit()
+    {
+        Console.WriteLine("SUBMIT ÇALIŞTI → " + model.Email);
+    }
+
+    public class EmailModel
+    {
+        [Required(ErrorMessage = "E-posta zorunludur")]
+        [EmailAddress(ErrorMessage = "Geçerli bir e-posta giriniz")]
+        public string? Email { get; set; }
+    }
+}

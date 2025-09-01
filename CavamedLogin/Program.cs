@@ -10,20 +10,26 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-
+builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
 builder.Services.AddLocalization();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+
+
+
 
 builder.Services.AddAuthentication(options =>
     {
@@ -42,7 +48,16 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddMemoryCache();
+
+
+
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Email"));
+builder.Services.AddTransient<IEmailSender, SMTPEmailSender>();
+builder.Services.AddTransient<IEmailSender<ApplicationUser>, DelegateIdentityEmailSender>();
+
 
 var app = builder.Build();
 
@@ -63,6 +78,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 var supportedCultures = new[] { "tr-TR", "en-US" }; // Türkçe ve Ýngilizce'yi destekliyoruz.
 
@@ -77,7 +93,7 @@ localizationOptions.RequestCultureProviders = new List<IRequestCultureProvider>
     new CookieRequestCultureProvider()
 };
 app.UseRequestLocalization(localizationOptions);
-
+app.MapRazorPages();
 app.UseAntiforgery();
 app.MapControllers();
 app.MapRazorComponents<App>()

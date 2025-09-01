@@ -147,4 +147,25 @@
   <data name="WelcomeBack" xml:space="preserve">
     <value>Welcome</value>
   </data>
+  <data name="Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Sign In" xml:space="preserve">
+    <value>Sign In</value>
+  </data>
+  <data name="Gmail Info" xml:space="preserve">
+    <value>To continue, sign in with your Cavamed Account.</value>
+  </data>
+  <data name="To continue, first verify your identity" xml:space="preserve">
+    <value>To continue, first verify your identity</value>
+  </data>
+  <data name="EMail" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Surname" xml:space="preserve">
+    <value>Surname</value>
+  </data>
 </root>

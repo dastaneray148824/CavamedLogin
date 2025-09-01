@@ -1,0 +1,136 @@
+﻿/* Sayfanın arka plan rengi (senin sayfana uyacak şekilde güncelle) */
+:root {
+    --app-bg: #f3f7fc;
+}
+/* ör: #f1f5fb / #eef3f9 gibi */
+
+.lang-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Segoe UI",system-ui,-apple-system,Arial,sans-serif
+}
+
+.lang-label {
+    font-size: 14px;
+    color: #3c4043
+}
+
+/* Ana tetikleyici (üstte görünen) */
+.sl-nav {
+    position: relative;
+    display: inline-block;
+    font-size: 14px
+
+}
+    .sl-nav i.fa-angle-down {
+        display: none !important;
+    }
+
+    .sl-nav ul {
+        list-style: none;
+        margin: 0;
+        padding: 0
+    }
+
+    .sl-nav > ul > li {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: space-between;
+        min-width: 180px;
+        padding: 10px 14px;
+        background: var(--app-bg); /* ← sayfa ile aynı */
+        border: 1px solid transparent; /* çerçevesiz gibi dursun */
+        border-radius: 12px;
+        cursor: pointer;
+        transition: border-color .15s, box-shadow .15s;
+    }
+
+        .sl-nav > ul > li:hover {
+            border-color: transparent
+        }
+
+        .sl-nav > ul > li:focus-within {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26,115,232,.15);
+            background: var(--app-bg);
+        }
+
+/* Aşağı ok (ister triangle ister font-awesome kullan) */
+.triangle {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #5f6368;
+    margin-left: auto; /* sağa yasla */
+}
+
+/* Açılır menü */
+.sl-nav > ul > li > ul {
+    position: absolute;
+    z-index: 50;
+    top: 100%; /* GAP YOK: tam altına yapışık */
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    display: none;
+    padding: 6px 0;
+    max-height: 320px;
+    overflow: auto; /* uzun listede scroll */
+}
+
+    /* Hover bridge: butondan menüye inerken kapanmasın */
+    .sl-nav > ul > li > ul::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -8px;
+        height: 8px;
+    }
+
+/* Menü açık kalsın: hem tetikleyicide hem menüde hover geçerli */
+.sl-nav > ul > li:hover > ul {
+    display: block
+}
+
+/* Seçenekler */
+.sl-nav .lang-form {
+    margin: 0
+}
+
+.sl-option {
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font: 500 14px/20px "Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+    color: #1f1f1f;
+}
+
+    .sl-option:hover {
+        background: #f1f3f4
+    }
+
+    .sl-option .active {
+        color: #1a73e8;
+        font-weight: 600
+    }
+
+/* Küçük ekran */
+@media(max-width:480px) {
+    .sl-nav > ul > li {
+        min-width: 150px
+    }
+}

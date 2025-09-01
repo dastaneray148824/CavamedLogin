@@ -1,31 +1,47 @@
-﻿@* Shared/CultureSelector.razor (YAN YANA İKİ BAYRAK VERSİYONU) *@
-
-@using System.Globalization
+﻿@using System.Globalization
 @inject NavigationManager Navigation
 
-<div class="d-flex align-items-center">
+@{
+    bool isTr = CultureInfo.CurrentCulture.Name == "tr-TR";
+    string currentLabel = isTr ? "Türkçe" : "English";
+}
 
-    @* Türkçe Bayrağı Formu *@
-    <form action="/Culture/Set" method="post" class="d-inline">
-        <input type="hidden" name="redirectUri" value="@RelativeRedirectUri" />
-        <input type="hidden" name="culture" value="tr-TR" />
-        <button type="submit" class="culture-button" title="Türkçe'ye Geç">
-            <span class="flag-icon flag-icon-tr"></span>
-        </button>
-    </form>
+<div class="lang-row">
+   
 
-    @* İngilizce Bayrağı Formu *@
-    <form action="/Culture/Set" method="post" class="d-inline">
-        <input type="hidden" name="redirectUri" value="@RelativeRedirectUri" />
-        <input type="hidden" name="culture" value="en-US" />
-        <button type="submit" class="culture-button" title="Switch to English">
-            <span class="flag-icon flag-icon-gb"></span> @* İngilizce için İngiltere bayrağı *@
-        </button>
-    </form>
+    <div class="sl-nav">
+        <ul>
+            <li>
+                <b>@currentLabel</b> <i class="fa fa-angle-down" aria-hidden="true"></i>
+                <div class="triangle"></div>
+                <ul>
+                    <!-- Türkçe seçeneği -->
+                    <li>
+                        <form action="/Culture/Set" method="post" class="lang-form">
+                            <input type="hidden" name="redirectUri" value="@RelativeRedirectUri" />
+                            <button type="submit" name="culture" value="tr-TR" class="sl-option">
+                                <span class="fi fi-tr"></span>   @* Türkçe *@
+                                <span class="@(isTr ? "active" : null)">Türkçe</span>
+                            </button>
+                        </form>
+                    </li>
 
+                    <!-- English seçeneği -->
+                    <li>
+                        <form action="/Culture/Set" method="post" class="lang-form">
+                            <input type="hidden" name="redirectUri" value="@RelativeRedirectUri" />
+                            <button type="submit" name="culture" value="en-US" class="sl-option">
+                                <span class="fi fi-gb"></span>   @* English *@
+                                <span class="@(isTr ? null : "active")">English</span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
 </div>
 
 @code {
-    // Bu property, tam adresten sadece /Account/Login gibi yerel yolu alır.
     private string RelativeRedirectUri => new Uri(Navigation.Uri).PathAndQuery;
 }

@@ -4,17 +4,28 @@
 @using CavamedLogin.Data
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Caching.Memory
+@using Microsoft.AspNetCore.Http
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject NavigationManager NavigationManager
 @inject IStringLocalizer<Login> L
+@inject IMemoryCache Cache
+@inject IHttpContextAccessor HttpContextAccessor
 
 <PageTitle>Giriş Yap</PageTitle>
 
 <div class="login-container">
-    <!-- SOL VE SAĞ PANELLERİNİZİN HTML KODLARI BURADA YER ALABİLİR -->
     <div class="login-form-panel">
-        <div class="login-card">
+        <!-- Kartı geniş yapıyoruz ki iki sütun sığsın -->
+        <div class="login-card login-card-wide">
+
+            @if (showLoading)
+            {
+                <div class="top-loading-bar">
+                    <div class="top-loading-bar__inner"></div>
+                </div>
+            }
 
             @if (!string.IsNullOrEmpty(errorMessage))
             {
@@ -23,171 +34,214 @@
                 </div>
             }
 
-            @if (!showPasswordstep)
-            {
-                <EditForm Model="emailInput" OnValidSubmit="HandleEmailStep" FormName="EmailForm" method="post">
-                    <DataAnnotationsValidator />
-                    <h2>@L["LoginButton"]</h2>
-                    <p class="subtitle">@L["WelcomeBack"]</p>
-                    <div class="form-floating mb-3 fade-in-up delay-1">
-                        <InputText @bind-Value="emailInput.Email" id="email" class="form-control" autocomplete="username" placeholder="e-posta" />
-                        <label for="email">@L["Email"]</label>
-                        <ValidationMessage For="() => emailInput.Email" class="text-danger" />
-                    </div>
-                    <div class="d-grid fade-in-up delay-2">
-                        <button type="submit" class="btn btn-primary btn-lg login-btn">@L["Next"]</button>
-                    </div>
-                </EditForm>
-            }
-            else
-            {
-                <EditForm Model="loginInput" OnValidSubmit="HandlePasswordStep" FormName="PasswordForm" method="post">
-                    <DataAnnotationsValidator />
-                    <h3>Hoş geldiniz</h3>
-                    <div class="user-email-display mb-3 fade-in-up delay-1">
-                        <i class="fa-solid fa-user"></i> @loginInput.Email
-                        <a href="/Account/Login" class="change-user-link">Değiştir</a>
-                    </div>
-                    <div class="form-floating mb-4 fade-in-up delay-2">
-                        <InputText @bind-Value="loginInput.Password" id="password" type="password" class="form-control" autocomplete="current-password" placeholder="şifre" @ref="passwordInput" />
-                        <label for="password">@L["Password"]</label>
-                        <ValidationMessage For="() => loginInput.Password" class="text-danger" />
-                    </div>
-                    <div class="form-check mb-4 fade-in-up delay-3">
-                        <InputCheckbox @bind-Value="loginInput.RememberMe" id="rememberMe" class="form-check-input" />
-                        <label for="rememberMe" class="form-check-label">@L["RememberMe"]</label>
-                    </div>
-                    <div class="d-grid fade-in-up delay-4">
-                        <button type="submit" class="btn btn-primary btn-lg login-btn">@L["LoginButton"]</button>
-                    </div>
-                </EditForm>
-            }
+            <!-- EMAIL FORM -->
+            <EditForm Model="@emailInput"
+                      FormName="EmailForm"
+                      OnValidSubmit="HandleEmailStep"
+                      style="@(showPasswordstep ? "display:none" : "block")">
 
-            <div class="login-links text-center mt-4">
-                <a href="/Account/ForgotPassword">@L["ForgotPassword"]</a>
-                <a href="/Account/Register">@L["Register"]</a>
-            </div>
+                <DataAnnotationsValidator />
+
+                <!-- İKİ SÜTUN: Sol (logo+başlık+metin) | Sağ (input+buton) -->
+                <div class="two-col-layout">
+                    <div class="left-pane">
+                        <!-- Üstte logo -->
+                        <img src="image/cavamedlogo.png" alt="CAVAMED" class="brand-logo" />
+                        <h1 class="welcome-title">@L["Sign In"]</h1>
+                        <p class="left-desc">
+                           @L["Gmail Info"]
+                        </p>
+                    </div>
+
+                    <div class="right-pane">
+                        <div class="form-floating mb-3">
+                            <InputText @bind-Value="emailInput.Email"
+                                       id="email"
+                                       class="form-control pw-input"
+                                       autocomplete="username"
+                                       placeholder="e-posta" />
+                            <label for="email">@L["EMail"]</label>
+                            <ValidationMessage For="@(() => emailInput.Email)" class="text-danger" />
+                        </div>
+
+                        <div class="pw-actions">
+                            <a class="forgot-link" href="/Account/Register">@L["Register"]</a>
+                            <button type="submit" class="btn next-btn">@L["Next"]</button>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+
+            <!-- PASSWORD FORM -->
+            <EditForm Model="@loginInput"
+                      FormName="PasswordForm"
+                      OnValidSubmit="HandlePasswordStep"
+                      style="@(showPasswordstep ? "block" : "display:none")">
+
+                <DataAnnotationsValidator />
+
+                <!-- İKİ SÜTUN: Sol (karşılama+email pili) | Sağ (şifre alanı) -->
+                <div class="password-layout">
+                    <div class="pw-left">
+                        <img src="image/cavamedlogo.png" alt="CAVAMED" class="brand-logo" />
+                        <h1 class="welcome-title">@L["WelcomeBack"]</h1>
+
+                        <div class="email-pill">
+                            <i class="fa-solid fa-user"></i>
+                            <span>@loginInput.Email</span>
+                            <a href="/Account/Login" class="change-user-link" style="margin-left:8px;">@L["Change"]</a>
+                        </div>
+                    </div>
+
+                    <div class="pw-right">
+                        <p class="verify-hint">@L["To continue, first verify your identity"]</p>
+
+                        <div class="form-floating mb-4">
+                            <InputText @bind-Value="loginInput.Password"
+                                       id="password"
+                                       type="password"
+                                       class="form-control pw-input"
+                                       autocomplete="current-password"
+                                       placeholder="şifre" />
+                            <label for="password">@L["Password"]</label>
+                            <ValidationMessage For="@(() => loginInput.Password)" class="text-danger" />
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <InputCheckbox @bind-Value="loginInput.RememberMe" id="rememberMe" class="form-check-input" />
+                            <label for="rememberMe" class="form-check-label">@L["RememberMe"]</label>
+                        </div>
+
+                        <div class="pw-actions">
+                            <a class="forgot-link" href="/Account/ForgotPassword">@L["Forget Password"]</a>
+                            <button type="submit" class="btn next-btn">@L["LoginButton"]</button>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+
+        </div>
+
+        <div class="culture-footer">
+            <CultureSelector />
         </div>
     </div>
 </div>
+
 
 @code {
     private bool showPasswordstep = false;
     private string? errorMessage;
     private InputText? passwordInput;
 
-    // --- MODELLER ---
-    // Her model, hangi formdan geldiğini FormName ile belirtir.
-    // Bu, "EditForm bir model gerektirir" hatasını önler.
+    private bool showLoading = false;
+
     [SupplyParameterFromForm(FormName = "EmailForm")]
-    private EmailInputModel emailInput { get; set; } = new();
+    public EmailInputModel emailInput { get; set; } = new();
 
     [SupplyParameterFromForm(FormName = "PasswordForm")]
     private LoginInputModel loginInput { get; set; } = new();
 
-    // --- URL'DEN OKUNACAK PARAMETRELER ---
-    [SupplyParameterFromQuery]
-    private string? step { get; set; }
-
-    [SupplyParameterFromQuery(Name = "email")]
-    private string? EmailFromQuery { get; set; }
-
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
-    [SupplyParameterFromQuery(Name = "error")]
-    private string? ErrorFromQuery { get; set; }
-
-    /// <summary>
-    /// Sayfa yüklendiğinde (GET isteği) çalışır. URL'yi okuyarak durumu ayarlar.
-    /// </summary>
-    protected override void OnInitialized()
+    // ADIM 1 → e-posta girilince
+    private async Task HandleEmailStep()
     {
-        // Şifre adımına gelinmişse...
-        if (step == "password" && !string.IsNullOrEmpty(EmailFromQuery))
-        {
-            showPasswordstep = true;
-            // HER İKİ MODELİ DE DOLDUR. Bu, görünmez olan e-posta formunun
-            // doğrulama hatası vermesini engeller.
-            loginInput.Email = EmailFromQuery;
-            emailInput.Email = EmailFromQuery;
-        }
+        errorMessage = null;
 
-        // Eğer URL'de bir hata kodu varsa, ilgili hata mesajını göster.
-        if (ErrorFromQuery == "InvalidPassword")
+        // 1) Loading bar aç
+        showLoading = true;
+        StateHasChanged();
+
+        try
         {
-            errorMessage = "Girdiğiniz şifre hatalı.";
+            // 2) Kullanıcıyı bul
+            var user = await UserManager.FindByEmailAsync(emailInput.Email);
+            if (user is null)
+            {
+                errorMessage = "Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı.";
+                return;
+            }
+
+            // 3) Nonce üret ve sakla
+            var nonce = Guid.NewGuid().ToString("N");
+            Cache.Set(nonce, emailInput.Email, TimeSpan.FromMinutes(5));
+
+            // 4) Cookie'ye nonce yaz
+            var context = HttpContextAccessor.HttpContext!;
+            context.Response.Cookies.Append("login_nonce", nonce, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(5)
+                });
+
+            // 5) Password adımına geç
+            loginInput.Email = emailInput.Email;
+            showPasswordstep = true;
+            await Task.Delay(300);
+            
+            
+        }
+        finally
+        {
+            // 6) Loading bar kapat (başarılı/başarısız her durumda)
+            showLoading = false;
+            StateHasChanged();
         }
     }
 
-    /// <summary>
-    /// Adım 1 (POST): E-posta formunu işler ve şifre adımına YÖNLENDİRİR.
-    /// </summary>
-    private async Task HandleEmailStep()
+
+    // ADIM 2 → şifre girilince
+    private async Task HandlePasswordStep()
     {
-        var user = await UserManager.FindByEmailAsync(emailInput.Email);
-        if (user == null)
+        var context = HttpContextAccessor.HttpContext!;
+        if (!context.Request.Cookies.TryGetValue("login_nonce", out var nonce))
         {
-            errorMessage = "Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı.";
+            errorMessage = "Oturum süresi doldu. Tekrar deneyin.";
+            showPasswordstep = false;
             return;
         }
 
-        // Yönlendirme URL'sini oluştur. E-posta, adım ve ReturnUrl bilgilerini içerir.
-        var targetUrl = $"/Account/Login?step=password&email={Uri.EscapeDataString(emailInput.Email)}";
-        if (!string.IsNullOrEmpty(ReturnUrl))
+        if (!Cache.TryGetValue(nonce, out string email))
         {
-            targetUrl += $"&ReturnUrl={Uri.EscapeDataString(ReturnUrl)}";
+            errorMessage = "Oturum süresi doldu. Tekrar deneyin.";
+            showPasswordstep = false;
+            return;
         }
 
-        // YÖNLENDİR. forceLoad: true, tam bir sayfa yenilemesi için zorunludur.
-        NavigationManager.NavigateTo(targetUrl, forceLoad: true);
-    }
+        loginInput.Email = email;
 
-    /// <summary>
-    /// Adım 2 (POST): Şifre formunu işler ve giriş yapmayı dener.
-    /// </summary>
-    private async Task HandlePasswordStep()
-    {
         var result = await SignInManager.PasswordSignInAsync(loginInput.Email, loginInput.Password, loginInput.RememberMe, lockoutOnFailure: false);
 
         if (result.Succeeded)
         {
-            // Başarılı girişten sonra ReturnUrl'e veya ana sayfaya yönlendir.
+            Cache.Remove(nonce);
+            context.Response.Cookies.Delete("login_nonce");
+
             NavigationManager.NavigateTo(ReturnUrl ?? "/Account/Manage");
         }
         else
         {
-            // BAŞARISIZ GİRİŞ DURUMUNDA YENİDEN YÖNLENDİRME YAPILIR.
-            // Bu, durumun kaybolmasını engeller ve hata mesajının gösterilmesini sağlar.
-            var errorUrl = $"/Account/Login?step=password&email={Uri.EscapeDataString(loginInput.Email)}&error=InvalidPassword";
-            if (!string.IsNullOrEmpty(ReturnUrl))
-            {
-                errorUrl += $"&ReturnUrl={Uri.EscapeDataString(ReturnUrl)}";
-            }
-            NavigationManager.NavigateTo(errorUrl, forceLoad: true);
+            errorMessage = "Şifre hatalı.";
+            showPasswordstep = true;
         }
     }
 
-    // Odaklanma metodu (değişiklik gerekmez)
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (showPasswordstep && passwordInput?.Element != null)
-        {
-            await passwordInput.Element.Value.FocusAsync();
-        }
-    }
     public class EmailInputModel
     {
-        [Required(ErrorMessage = "E-posta adresi gereklidir.")]
-        [EmailAddress(ErrorMessage = "Lütfen geçerli bir e-posta adresi girin.")]
-        public string Email { get; set; }
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
     }
 
     public class LoginInputModel
     {
-        public string Email { get; set; }
-        [Required(ErrorMessage = "Şifre gereklidir.")]
-        public string Password { get; set; }
+        public string Email { get; set; } = "";
+        [Required]
+        public string Password { get; set; } = "";
         public bool RememberMe { get; set; }
     }
 }

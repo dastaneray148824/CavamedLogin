@@ -1,185 +1,293 @@
-﻿/* Reset ve temel ayarlar */
-body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden; /* Taşmaları gizle */
+﻿/* === ROOT DEĞERLERİ === */
+:root {
+    --g-bg: #f1f3f4;
+    --g-blue: #1a73e8;
+    --g-blue-hover: #1669c1;
+    --g-text: #202124;
+    --g-sub: #5f6368;
+    --g-border: #dadce0;
 }
 
-/* ————————————————
-   ARKA PLAN: TÜM SAYFAYA KAPLAYAN SLAYT GEÇİŞİ
-   ———————————————— */
-.login-image-panel {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1; /* Form panelinin arkasında kalsın */
-    overflow: hidden;
-}
-
-.bg-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+/* === GENEL === */
+html, body {
     height: 100%;
-    background-size: cover;
-    background-position: center;
-    opacity: 0;
-    animation: crossfade 21s infinite;
 }
 
-.bg-layer-1 {
-    background-image: url('../images/bg1.jpeg');
-    animation-delay: 0s;
+body {
+    font-family: "Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+    color: var(--g-text);
+    background: var(--g-bg);
+    margin: 0;
 }
 
-.bg-layer-2 {
-    background-image: url('../images/bg2.jpeg');
-    animation-delay: 7s;
-}
-
-.bg-layer-3 {
-    background-image: url('../images/bg3.jpeg');
-    animation-delay: 14s;
-}
-
-@keyframes crossfade {
-    0% {
-        opacity: 0;
-    }
-
-    10% {
-        opacity: 1;
-    }
-
-    33% {
-        opacity: 1;
-    }
-
-    43% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 0;
-    }
-}
-
-/* ————————————————
-   KONTEYNER: CARD’I ORTALA
-   ———————————————— */
+/* === LOGIN CONTAINER === */
 .login-container {
-    position: relative;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100vw;
-    height: 100vh;
-    z-index: 1; /* Form panel üstte olsun */
+    padding: 24px;
 }
 
-/* ————————————————
-   FORM PANEL: ARKA PLAN VE STİL
-   ———————————————— */
 .login-form-panel {
-    flex: none;
+    position: relative;
     width: 100%;
-    max-width: 420px;
-    background-color: rgba(255, 255, 255, 0.90); /* Yarı saydam beyaz */
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    max-width: 1200px;
+    max-height: 90vh;
 }
 
-.login-card h2 {
-    font-size: 2rem;
+/* === KART === */
+.login-card {
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 48px 56px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.12);
+    max-width: 620px; /* genişliği artırdık (560 → 680) */
+    min-height: 280px; /* aynı kaldı */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+}
+
+.top-loading-bar {
+    position: fixed; /* ekranın tepesine sabitle */
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 3px;
+    z-index: 2147483647; /* her şeyin üstünde */
+    overflow: hidden;
+    pointer-events: none;
+    background: transparent;
+}
+
+.top-loading-bar__inner {
+    position: absolute;
+    height: 100%;
+    width: 30%;
+    left: -30%;
+    background: #1a73e8; /* mavi */
+    animation: topbar-sweep 1s cubic-bezier(.4,0,.2,1) infinite;
+}
+
+@keyframes topbar-sweep {
+    0% {
+        left: -30%;
+        width: 30%;
+    }
+
+    50% {
+        left: 35%;
+        width: 40%;
+    }
+
+    100% {
+        left: 100%;
+        width: 30%;
+    }
+}
+
+.login-card-wide {
+    max-width: 1100px; /* genişliği artırdık (960 → 1100) */
+    padding: 42px 50px;
+    min-height: 340px; /* aynı kaldı */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* === İKİ SÜTUN LAYOUT === */
+.two-col-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+}
+
+@media (min-width: 900px) {
+    .two-col-layout {
+        grid-template-columns: 1.2fr 1fr;
+    }
+}
+
+/* === SOL PANEL === */
+.brand-logo {
+    display: block;
+    height: 23px; /* 44–56 arası deneyebilirsin */
+    margin-bottom: 12px;
+    object-fit: contain;
+}
+
+.welcome-title {
+    font-size: 35px; /* başlığı daha büyük yap */
+    line-height: 1.2;
+    font-weight: 200;
+    margin: 0 0 20px;
+}
+
+.left-desc {
+    color: var(--g-sub);
+    font-size: 14px;
+    max-width: 520px;
+    margin: 0;
+}
+
+/* === SAĞ PANEL === */
+.pw-input.form-control {
+    height: 58px;
+    border-radius: 10px;
+    border: 1.5px solid var(--g-border);
+    box-shadow: none;
+    font-size: 14px;
+}
+
+    .pw-input.form-control:focus {
+        border-color: var(--g-blue);
+        box-shadow: 0 0 0 3px rgba(26,115,232,.15);
+    }
+
+.verify-hint {
+    color: var(--g-sub);
+    font-size: 14px;
+}
+
+.forgot-link {
+    color: var(--g-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+    .forgot-link:hover {
+        text-decoration: underline;
+    }
+
+/* === BUTON VE ALT SATIR === */
+.pw-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.next-btn {
+    background: var(--g-blue);
+    color: #fff;
+    border: 0;
+    border-radius: 24px;
+    padding: 12px 24px;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    cursor: pointer;
 }
 
-.login-card .subtitle {
-    margin-bottom: 2rem;
-    color: #6c757d;
+    .next-btn:hover {
+        background: var(--g-blue-hover);
+    }
+
+/* === PASSWORD FORM (2. ADIM) === */
+.password-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
 }
 
-.form-control {
-    background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid #ccc;
+@media (min-width: 900px) {
+    .password-layout {
+        grid-template-columns: 1.1fr 1fr;
+    }
 }
 
-/* Butonlar */
-.login-btn {
-    padding: 0.85rem 1rem;
+.email-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--g-border);
+    background: #fff;
+    padding: 15px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+
+.change-user-link {
+    color: var(--g-blue);
+    text-decoration: none;
+}
+
+    .change-user-link:hover {
+        text-decoration: underline;
+    }
+
+/* Şifreyi göster / Remember me */
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+}
+
+.form-check-label {
+    margin-left: 6px;
+    font-size: 14px;
+    color: var(--g-text);
+}
+
+/* === LOGIN/REGISTER BUTON === */
+.login-btn.btn-primary {
+    background: var(--g-blue);
+    border-color: var(--g-blue);
+    border-radius: 24px;
     font-weight: 600;
 }
 
-/* Alt linkler */
-.login-links {
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
-}
-
-    .login-links a {
-        color: #007bff;
-        margin: 0 0.5rem;
+    .login-btn.btn-primary:hover {
+        background: var(--g-blue-hover);
+        border-color: var(--g-blue-hover);
     }
 
-        .login-links a:hover {
-            color: #0056b3;
-        }
+/* === ALT LİNKLER === */
+.login-links a {
+    margin: 0 8px;
+    color: var(--g-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
 
-/* Responsive: mobilde sadece form görünür */
-@media (max-width: 992px) {
-    body {
-        overflow: auto;
+    .login-links a:hover {
+        text-decoration: underline;
     }
 
-    .login-image-panel {
-        display: none;
+/* === ALERT === */
+.login-card .alert {
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+}
+
+/* === CULTURE SELECTOR === */
+.culture-footer {
+    position: absolute;
+    left: 8px;
+    bottom: -48px;
+    font-size: 14px;
+    color: var(--g-sub);
+}
+
+@media (max-width: 600px) {
+    .culture-footer {
+        position: static;
+        margin-top: 12px;
     }
 }
 
-/* ————————————————
-   İSTEĞE BAĞLI: fade-in-up Animasyonu
-   ———————————————— */
-@keyframes fadeInUp {
-    from {
-        transform: translate3d(0, 20px, 0);
-        opacity: 0;
+/* === RESPONSIVE === */
+@media (max-width: 576px) {
+    .login-card, .login-card-wide {
+        padding: 32px 20px;
+        border-radius: 18px;
+        max-width: 100%;
     }
 
-    to {
-        transform: translate3d(0, 0, 0);
-        opacity: 1;
+    .welcome-title {
+        font-size: 32px;
     }
-}
-
-.fade-in-up {
-    opacity: 0;
-    animation-name: fadeInUp;
-    animation-duration: 0.8s;
-    animation-fill-mode: forwards;
-    animation-timing-function: ease-out;
-}
-
-.delay-1 {
-    animation-delay: 0.2s;
-}
-
-.delay-2 {
-    animation-delay: 0.4s;
-}
-
-.delay-3 {
-    animation-delay: 0.6s;
-}
-
-.delay-4 {
-    animation-delay: 0.8s;
-}
-
-.delay-5 {
-    animation-delay: 1s;
 }
