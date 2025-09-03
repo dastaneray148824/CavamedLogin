@@ -117,73 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Change" xml:space="preserve">
-    <value>Change</value>
-  </data>
-  <data name="ConfirmPassword" xml:space="preserve">
-    <value>Confirm Password</value>
-  </data>
-  <data name="Continue by registering" xml:space="preserve">
-    <value>Continue by registering</value>
-  </data>
-  <data name="Forget Password" xml:space="preserve">
-    <value>Did you forget your password ?</value>
-  </data>
-  <data name="LoginButton" xml:space="preserve">
-    <value>Login</value>
-  </data>
-  <data name="Password" xml:space="preserve">
-    <value>Password</value>
-  </data>
-  <data name="Register" xml:space="preserve">
-    <value>Register</value>
-  </data>
-  <data name="RememberMe" xml:space="preserve">
-    <value>Remember Me</value>
-  </data>
-  <data name="Resetpassword" xml:space="preserve">
-    <value>Reset Password</value>
-  </data>
-  <data name="WelcomeBack" xml:space="preserve">
-    <value>Welcome</value>
-  </data>
-  <data name="Next" xml:space="preserve">
-    <value>Next</value>
-  </data>
-  <data name="Sign In" xml:space="preserve">
-    <value>Sign In</value>
-  </data>
-  <data name="Gmail Info" xml:space="preserve">
-    <value>To continue, sign in with your Cavamed Account.</value>
-  </data>
-  <data name="To continue, first verify your identity" xml:space="preserve">
-    <value>To continue, first verify your identity</value>
-  </data>
-  <data name="EMail" xml:space="preserve">
-    <value>E-Mail</value>
-  </data>
-  <data name="Name" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="Surname" xml:space="preserve">
-    <value>Surname</value>
-  </data>
-  <data name="Şifre hatalı." xml:space="preserve">
-    <value>Password is incorrect</value>
-  </data>
-  <data name="Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı." xml:space="preserve">
-    <value>No registered user was found with this email address.</value>
-  </data>
-  <data name="PasswordRequired" xml:space="preserve">
-    <value>Password cannot be empty</value>
+  <data name="EmailInvalid" xml:space="preserve">
+    <value>geçersiz</value>
   </data>
   <data name="EmailRequired" xml:space="preserve">
-    <value>E-Mail cannot be empty</value>
-  </data>
-  <data name="Empty" xml:space="preserve">
-    <value>Fill in the blanks</value>
-  </data>
-  <data name="PasswordsDoNotMatch" xml:space="preserve">
-    <value>Passwords do not match</value>
+    <value>email boş</value>
   </data>
 </root>

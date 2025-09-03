@@ -21,8 +21,8 @@
     position: relative;
     display: inline-block;
     font-size: 14px
-
 }
+
     .sl-nav i.fa-angle-down {
         display: none !important;
     }

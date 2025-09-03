@@ -168,4 +168,22 @@
   <data name="Surname" xml:space="preserve">
     <value>Soyisim</value>
   </data>
+  <data name="Şifre hatalı." xml:space="preserve">
+    <value>Şifre hatalı.</value>
+  </data>
+  <data name="Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı." xml:space="preserve">
+    <value>Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı.</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Şifre alanı boş olamaz</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>E-Posta bilgisi boş olamaz</value>
+  </data>
+  <data name="Empty" xml:space="preserve">
+    <value>Boş alanları doldurunuz</value>
+  </data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve">
+    <value>Şifre eşleşmedi</value>
+  </data>
 </root>

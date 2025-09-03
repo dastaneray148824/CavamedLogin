@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using CavamedLogin.Services.Captcha;
+using CavamedLogin.Services.Security;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,6 +54,13 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddMemoryCache();
 
+// CAPTCHA
+builder.Services.Configure<CaptchaOptions>(builder.Configuration.GetSection("Captcha"));
+builder.Services.AddHttpClient<TurnstileVerifier>();
+builder.Services.AddScoped<ICaptchaVerifier>(sp => sp.GetRequiredService<TurnstileVerifier>());
+
+// Yanlýþ deneme sayacý
+builder.Services.AddSingleton<ILoginAttemptStore, MemoryLoginAttemptStore>();
 
 
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Email"));

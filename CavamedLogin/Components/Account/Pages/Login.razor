@@ -6,12 +6,19 @@
 @using Microsoft.Extensions.Localization
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Http
+
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject NavigationManager NavigationManager
 @inject IStringLocalizer<Login> L
 @inject IMemoryCache Cache
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IJSRuntime JS
+
+@inject CavamedLogin.Services.Security.ILoginAttemptStore AttemptStore
+@inject CavamedLogin.Services.Captcha.ICaptchaVerifier CaptchaVerifier
+@inject Microsoft.Extensions.Options.IOptions<CavamedLogin.Services.Captcha.CaptchaOptions> CaptchaOptions
+
 
 <PageTitle>Giriş Yap</PageTitle>
 
@@ -20,12 +27,6 @@
         <!-- Kartı geniş yapıyoruz ki iki sütun sığsın -->
         <div class="login-card login-card-wide">
 
-            @if (showLoading)
-            {
-                <div class="top-loading-bar">
-                    <div class="top-loading-bar__inner"></div>
-                </div>
-            }
 
             @if (!string.IsNullOrEmpty(errorMessage))
             {
@@ -36,9 +37,9 @@
 
             <!-- EMAIL FORM -->
             <EditForm Model="@emailInput"
-                      FormName="EmailForm"
-                      OnValidSubmit="HandleEmailStep"
-                      style="@(showPasswordstep ? "display:none" : "block")">
+            FormName="EmailForm"
+            OnValidSubmit="HandleEmailStep"
+            style="@(showPasswordstep ? "display:none" : "block")">
 
                 <DataAnnotationsValidator />
 
@@ -49,24 +50,39 @@
                         <img src="image/cavamedlogo.png" alt="CAVAMED" class="brand-logo" />
                         <h1 class="welcome-title">@L["Sign In"]</h1>
                         <p class="left-desc">
-                           @L["Gmail Info"]
+                            @L["Gmail Info"]
                         </p>
                     </div>
 
                     <div class="right-pane">
                         <div class="form-floating mb-3">
                             <InputText @bind-Value="emailInput.Email"
-                                       id="email"
-                                       class="form-control pw-input"
-                                       autocomplete="username"
-                                       placeholder="e-posta" />
+                            id="email"
+                            class="form-control pw-input"
+                            autocomplete="username"
+                            placeholder="e-posta" />
                             <label for="email">@L["EMail"]</label>
                             <ValidationMessage For="@(() => emailInput.Email)" class="text-danger" />
                         </div>
 
+                        @if (RequireCaptchaEmailStep)
+                        {
+                            <!-- Token'ı modele yazmak için hidden input -->
+                        
+                            <!-- Turnstile widget -->
+                            <div class="cf-turnstile"
+                                 data-sitekey="@CaptchaOptions.Value.SiteKey"
+                                 data-callback="cavamed.onTurnstileSuccess"
+                                 data-expired-callback="cavamed.onTurnstileExpired">
+                            </div>
+                        }
+
                         <div class="pw-actions">
                             <a class="forgot-link" href="/Account/Register">@L["Register"]</a>
-                            <button type="submit" class="btn next-btn">@L["Next"]</button>
+                            <button id="btnEmailNext" type="submit"
+                                    class="btn next-btn">
+                                @L["Next"]
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -74,11 +90,12 @@
 
             <!-- PASSWORD FORM -->
             <EditForm Model="@loginInput"
-                      FormName="PasswordForm"
-                      OnValidSubmit="HandlePasswordStep"
-                      style="@(showPasswordstep ? "block" : "display:none")">
+            FormName="PasswordForm"
+            OnValidSubmit="HandlePasswordStep"
+            style="@(showPasswordstep ? "block" : "display:none")">
 
                 <DataAnnotationsValidator />
+
 
                 <!-- İKİ SÜTUN: Sol (karşılama+email pili) | Sağ (şifre alanı) -->
                 <div class="password-layout">
@@ -98,13 +115,13 @@
 
                         <div class="form-floating mb-4">
                             <InputText @bind-Value="loginInput.Password"
-                                       id="password"
-                                       type="password"
-                                       class="form-control pw-input"
-                                       autocomplete="current-password"
-                                       placeholder="şifre" />
+                            id="password"
+                            type="password"
+                            class="form-control pw-input"
+                            autocomplete="current-password"
+                            placeholder="şifre" />
                             <label for="password">@L["Password"]</label>
-                            <ValidationMessage For="@(() => loginInput.Password)" class="text-danger" />
+
                         </div>
 
                         <div class="form-check mb-4">
@@ -114,7 +131,9 @@
 
                         <div class="pw-actions">
                             <a class="forgot-link" href="/Account/ForgotPassword">@L["Forget Password"]</a>
-                            <button type="submit" class="btn next-btn">@L["LoginButton"]</button>
+                            <button id="btnEmailNext" type="submit" class="btn next-btn">
+                                @L["Next"]
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -124,17 +143,24 @@
 
         <div class="culture-footer">
             <CultureSelector />
+           
         </div>
     </div>
 </div>
-
+<script src="js/captcha.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 @code {
+    
+
+    private const int EmailFailThreshold = 3; // 3 yanlış → CAPTCHA
+    private string AttemptKey =>
+        HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
+    private bool RequireCaptchaEmailStep => AttemptStore.Get(AttemptKey) >= EmailFailThreshold;
+
     private bool showPasswordstep = false;
     private string? errorMessage;
     private InputText? passwordInput;
-
-    private bool showLoading = false;
 
     [SupplyParameterFromForm(FormName = "EmailForm")]
     public EmailInputModel emailInput { get; set; } = new();
@@ -145,58 +171,119 @@
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
+    private bool _resetAfterRender;
+    protected override Task OnAfterRenderAsync(bool first)
+    {
+        if (_resetAfterRender)
+        {
+            _resetAfterRender = false;
+            return JS.InvokeVoidAsync("cavamed.resetCaptcha").AsTask();
+        }
+        return Task.CompletedTask;
+    }
+
+ 
+    private string? GetClientIp()
+    {
+        var ctx = HttpContextAccessor.HttpContext;
+        var fwd = ctx?.Request?.Headers?["X-Forwarded-For"].ToString();
+        if (!string.IsNullOrWhiteSpace(fwd))
+        {
+            // "client, proxy1, proxy2" → ilkini al
+            var first = fwd.Split(',')[0].Trim();
+            if (!string.IsNullOrWhiteSpace(first)) return first;
+        }
+        return ctx?.Connection?.RemoteIpAddress?.ToString();
+    }
+
+    
     // ADIM 1 → e-posta girilince
     private async Task HandleEmailStep()
     {
         errorMessage = null;
 
-        // 1) Loading bar aç
-        showLoading = true;
-        StateHasChanged();
+        var attemptKey = AttemptKey;
+        var needCaptcha = AttemptStore.Get(attemptKey) >= EmailFailThreshold;
 
-        try
+        // 1) CAPTCHA gerekiyorsa: token'ı formdan al ve doğrula
+        if (needCaptcha)
         {
-            // 2) Kullanıcıyı bul
-            var user = await UserManager.FindByEmailAsync(emailInput.Email);
-            if (user is null)
+            // Turnstile’ın kendi input'u
+            var form = HttpContextAccessor.HttpContext?.Request?.Form;
+            var token = form?["cf-turnstile-response"].FirstOrDefault();
+
+            var ip = GetClientIp();
+            var captchaOk = false;
+
+            if (!string.IsNullOrWhiteSpace(token))
             {
-                errorMessage = "Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı.";
-                return;
+                captchaOk = await CaptchaVerifier.VerifyAsync(token, ip);
             }
 
-            // 3) Nonce üret ve sakla
-            var nonce = Guid.NewGuid().ToString("N");
-            Cache.Set(nonce, emailInput.Email, TimeSpan.FromMinutes(5));
+            // Token tek kullanımlık → sonucu ne olursa olsun reset'i render sonrasına ertele
+            _resetAfterRender = true;   // <-- OnAfterRenderAsync'te cavamed.resetCaptcha çağırılacak
+            StateHasChanged();          // yeni render tetikle
 
-            // 4) Cookie'ye nonce yaz
-            var context = HttpContextAccessor.HttpContext!;
-            context.Response.Cookies.Append("login_nonce", nonce, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Lax,
-                    Expires = DateTimeOffset.UtcNow.AddMinutes(5)
-                });
-
-            // 5) Password adımına geç
-            loginInput.Email = emailInput.Email;
-            showPasswordstep = true;
-            await Task.Delay(300);
-            
-            
+            if (!captchaOk)
+            {
+                errorMessage = L["SecurityCheckFailed"];
+                return;
+            }
         }
-        finally
+
+        // 2) E-posta zorunlu
+        if (string.IsNullOrWhiteSpace(emailInput.Email))
         {
-            // 6) Loading bar kapat (başarılı/başarısız her durumda)
-            showLoading = false;
-            StateHasChanged();
+            errorMessage = L["EmailRequired"];
+            return;
         }
+
+        // 3) Kullanıcıyı bul
+        var user = await UserManager.FindByEmailAsync(emailInput.Email);
+        if (user is null)
+        {
+            var count = AttemptStore.Increment(attemptKey);
+
+            errorMessage = count >= EmailFailThreshold
+                ? L["EmailNotVerifiedWithCaptcha"]
+                : L["Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı."];
+
+            return; // (CAPTCHA reset bayrağı zaten set edildi)
+        }
+
+        // 4) Doğru e-posta → CAPTCHA eşiğini sıfırla
+        AttemptStore.Reset(attemptKey);
+
+        // 5) Nonce üret ve 5 dk cache'le
+        var nonce = Guid.NewGuid().ToString("N");
+        Cache.Set(nonce, emailInput.Email, TimeSpan.FromMinutes(5));
+
+        // 6) Cookie'ye nonce yaz (5 dk)
+        var context = HttpContextAccessor.HttpContext!;
+        context.Response.Cookies.Append("login_nonce", nonce, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(5)
+            });
+
+        // 7) Password adımına geç
+        loginInput.Email = emailInput.Email;
+        showPasswordstep = true;
     }
 
 
     // ADIM 2 → şifre girilince
     private async Task HandlePasswordStep()
     {
+        if (string.IsNullOrEmpty(loginInput.Password))
+        {
+            errorMessage = L["PasswordRequired"];
+            showPasswordstep = true;
+            return;
+        }
+        ;
         var context = HttpContextAccessor.HttpContext!;
         if (!context.Request.Cookies.TryGetValue("login_nonce", out var nonce))
         {
@@ -212,6 +299,7 @@
             return;
         }
 
+
         loginInput.Email = email;
 
         var result = await SignInManager.PasswordSignInAsync(loginInput.Email, loginInput.Password, loginInput.RememberMe, lockoutOnFailure: false);
@@ -223,25 +311,33 @@
 
             NavigationManager.NavigateTo(ReturnUrl ?? "/Account/Manage");
         }
+        else if (string.IsNullOrWhiteSpace(loginInput.Password))
+        {
+            errorMessage = L["PasswordRequired"]; // resx key
+            showPasswordstep = true;
+            return;
+        }
         else
         {
-            errorMessage = "Şifre hatalı.";
+            errorMessage = L["Şifre hatalı."];
             showPasswordstep = true;
         }
     }
 
     public class EmailInputModel
     {
-        [Required]
-        [EmailAddress]
+
         public string Email { get; set; } = string.Empty;
+
+        public string? CaptchaToken { get; set; } // sadece eşik aşıldıysa doldurulur
     }
 
     public class LoginInputModel
     {
         public string Email { get; set; } = "";
-        [Required]
+       
         public string Password { get; set; } = "";
         public bool RememberMe { get; set; }
     }
+
 }
