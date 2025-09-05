@@ -1,6 +1,7 @@
-﻿using DTO;
+﻿
+using Enums;
 
-namespace Enums
+namespace DTO
 {
     public class KullaniciCihaz : Core
     {
