@@ -2,10 +2,12 @@
 @layout EmptyLayout
 @using System.ComponentModel.DataAnnotations
 @using CavamedLogin.Data
+@using DTO
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Localization
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Http
+@using Newtonsoft.Json
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
@@ -14,6 +16,7 @@
 @inject IMemoryCache Cache
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IJSRuntime JS
+
 
 @inject CavamedLogin.Services.Security.ILoginAttemptStore AttemptStore
 @inject CavamedLogin.Services.Captcha.ICaptchaVerifier CaptchaVerifier
@@ -152,11 +155,16 @@
 @code {
 
     DTO.LoginDTO dto = new() { EMail = "", Sifre = "", LoginType = Enums.LoginType.Portal, BrowserEngine = Enums.BrowserEngine.Other, BrowserName = Enums.BrowserName.Other, UserAgent = "", KullaniciIP = "8.8.8.8", KullaniciCihaz = new DTO.KullaniciCihaz { Id = Tools.IdFactory.GetId, DeviceName = Enums.DeviceName.Android, DeviceType = Enums.DeviceType.Phone }, Lang = Enums.Lang.tr, };
-  
+
+
+
     private const int EmailFailThreshold = 3; // 3 yanlış → CAPTCHA
     private string AttemptKey =>
         HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
     private bool RequireCaptchaEmailStep => AttemptStore.Get(AttemptKey) >= EmailFailThreshold;
+    private bool _showError;
+    private string? _errorText;
+
 
     private bool showPasswordstep = false;
     private string? errorMessage;
@@ -178,6 +186,12 @@
         {
             _resetAfterRender = false;
             return JS.InvokeVoidAsync("cavamed.resetCaptcha").AsTask();
+        }
+        if (_showError && _errorText is not null)
+        {
+            JS.InvokeVoidAsync("alert", _errorText);
+            _showError = false;              // tekrar göstermesin
+            _errorText = null;
         }
         return Task.CompletedTask;
     }
@@ -302,25 +316,60 @@
 
         loginInput.Email = email;
 
-        var result = await SignInManager.PasswordSignInAsync(loginInput.Email, loginInput.Password, loginInput.RememberMe, lockoutOnFailure: false);
-
-        if (result.Succeeded)
+        //TODO: burada pass ile ilgili hatalar gerekli veya yanlışı yönet eğer gerekli veya yanlış ise daha datayı göndermeden burada hata ver ve işlemi bitir
+        try
         {
+            dto.EMail = loginInput.Email;
+            dto.Sifre = loginInput.Password;
+            GlobalValues.GlobalVariables._loginDTO = new Tools.RESTApi().GetResponse<LoginDTO>("", "", "Kullanici", "DoLogin", JsonConvert.SerializeObject(dto));
             Cache.Remove(nonce);
             context.Response.Cookies.Delete("login_nonce");
-
             NavigationManager.NavigateTo(ReturnUrl ?? "/Account/Manage");
         }
-        else if (string.IsNullOrWhiteSpace(loginInput.Password))
+        catch (Exception ex)
         {
-            errorMessage = L["PasswordRequired"]; // resx key
-            showPasswordstep = true;
-            return;
+            _errorText = $"Hata oluştu: {ex.Message}";
+            _showError = true;
+            StateHasChanged(); // render tetikle
+            //Snackbar.Add($"Hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            // burada verilecek hata zaten RestApi de verilecek!
+            return; //kodu bitircek
         }
-        else
+
+        //var result = await SignInManager.PasswordSignInAsync(loginInput.Email, loginInput.Password, loginInput.RememberMe, lockoutOnFailure: false);
+
+        // if (result.Succeeded)
+        // {
+        //     Cache.Remove(nonce);
+        //     context.Response.Cookies.Delete("login_nonce");
+
+        //     NavigationManager.NavigateTo(ReturnUrl ?? "/Account/Manage");
+        // }
+        // else if (string.IsNullOrWhiteSpace(loginInput.Password))
+        // {
+        //     errorMessage = L["PasswordRequired"]; // resx key
+        //     showPasswordstep = true;
+        //     return;
+        // }
+        // else
+        // {
+        //     errorMessage = L["Şifre hatalı."];
+        //     showPasswordstep = true;
+        // }
+    }
+
+
+    private async Task HandleSubmitAsync()
+    {
+        try
         {
-            errorMessage = L["Şifre hatalı."];
-            showPasswordstep = true;
+            // ...iş mantığın
+        }
+        catch (Exception ex)
+        {
+            _errorText = $"Hata oluştu: {ex.Message}";
+            _showError = true;
+            StateHasChanged(); // render tetikle
         }
     }
 

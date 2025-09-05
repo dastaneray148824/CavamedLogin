@@ -49,7 +49,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
-
+builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddMemoryCache();
@@ -63,9 +63,9 @@ builder.Services.AddScoped<ICaptchaVerifier>(sp => sp.GetRequiredService<Turnsti
 builder.Services.AddSingleton<ILoginAttemptStore, MemoryLoginAttemptStore>();
 
 
-builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Email"));
-builder.Services.AddTransient<IEmailSender, SMTPEmailSender>();
-builder.Services.AddTransient<IEmailSender<ApplicationUser>, DelegateIdentityEmailSender>();
+//builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Email"));
+//builder.Services.AddTransient<IEmailSender, SMTPEmailSender>();
+//builder.Services.AddTransient<IEmailSender<ApplicationUser>, DelegateIdentityEmailSender>();
 
 
 var app = builder.Build();
