@@ -186,4 +186,10 @@
   <data name="PasswordsDoNotMatch" xml:space="preserve">
     <value>Passwords do not match</value>
   </data>
+  <data name="SecurityCheckFailed" xml:space="preserve">
+    <value>Security Check Failed</value>
+  </data>
+  <data name="EmailNotVerifiedWithCaptcha" xml:space="preserve">
+    <value>Email not verified with security</value>
+  </data>
 </root>

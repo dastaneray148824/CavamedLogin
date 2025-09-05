@@ -186,4 +186,10 @@
   <data name="PasswordsDoNotMatch" xml:space="preserve">
     <value>Şifre eşleşmedi</value>
   </data>
+  <data name="SecurityCheckFailed" xml:space="preserve">
+    <value>Güvenlik Kontrolü Başarısız Oldu</value>
+  </data>
+  <data name="EmailNotVerifiedWithCaptcha" xml:space="preserve">
+    <value>E-posta Güvenlik ile Doğrulanmadı</value>
+  </data>
 </root>
