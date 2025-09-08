@@ -331,32 +331,17 @@
         {
             var msg = ex.Message ?? string.Empty;
 
-            if (msg.Contains("Sisteme Giriş Bilgilerinizi Kontrol", StringComparison.OrdinalIgnoreCase) ||
-                msg.Contains("Şifre", StringComparison.OrdinalIgnoreCase) ||
-                msg.Contains("Unauthorized", StringComparison.OrdinalIgnoreCase) ||
-                msg.Contains("401"))
-            {
-                // ❌ İş kuralı hatası (yanlış şifre vs.)
                 errorMessage = L["Password is incorrect"];
                 showPasswordstep = true;
-            }
-            else
-            {
-                // 🚨 Teknik hata
-                _errorText = $"Hata oluştu: {ex.Message}";
-                _showError = true;
-                StateHasChanged(); // render tetikle
-            }
 
             return; // kodu bitir
         }
         catch (Exception ex)
         {
-            // ⚠️ Teknik hata → üst paneli göster
+
             _errorText = $"Hata oluştu: {ex.Message}";
             _showError = true;
 
-            // Alan altı mesajı temizle (isteğe bağlı)
             errorMessage = null;
 
             StateHasChanged();
@@ -393,22 +378,7 @@
         //     errorMessage = L["Şifre hatalı."];
         //     showPasswordstep = true;
         // }
-   
 
-
-    private async Task HandleSubmitAsync()
-    {
-        try
-        {
-            // ...iş mantığın
-        }
-        catch (Exception ex)
-        {
-            _errorText = $"Hata oluştu: {ex.Message}";
-            _showError = true;
-            StateHasChanged(); // render tetikle
-        }
-    }
 
     public class EmailInputModel
     {
