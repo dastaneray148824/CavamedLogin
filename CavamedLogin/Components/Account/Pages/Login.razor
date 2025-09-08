@@ -294,51 +294,96 @@
     // ADIM 2 → şifre girilince
     private async Task HandlePasswordStep()
     {
-
-
         if (string.IsNullOrEmpty(loginInput.Password))
         {
             errorMessage = L["PasswordRequired"];
             showPasswordstep = true;
             return;
         }
-        ;
 
         var context = HttpContextAccessor.HttpContext!;
-        if (!context.Request.Cookies.TryGetValue("login_nonce", out var nonce))
+        if (!context.Request.Cookies.TryGetValue("login_nonce", out var nonce) ||
+            !Cache.TryGetValue(nonce, out string email))
         {
             errorMessage = "Oturum süresi doldu. Tekrar deneyin.";
             showPasswordstep = false;
             return;
         }
-
-        if (!Cache.TryGetValue(nonce, out string email))
-        {
-            errorMessage = "Oturum süresi doldu. Tekrar deneyin.";
-            showPasswordstep = false;
-            return;
-        }
-
 
         loginInput.Email = email;
-        dto.EMail = loginInput.Email;
-        dto.Sifre = loginInput.Password;
-        GlobalValues.GlobalVariables._loginDTO = new RESTApi().GetResponse<LoginDTO>(GlobalVariables._loginDTO.TokenId, GlobalVariables._loginSirketDTO.Id, "Kullanici", "DoLogin", JsonConvert.SerializeObject(dto));
 
-        var result = await SignInManager.PasswordSignInAsync(loginInput.Email, loginInput.Password, loginInput.RememberMe, lockoutOnFailure: false);
+        // Navigasyon hedefini ÖNCE belirleyelim
+        string target = ResolveTarget(ReturnUrl); // aşağıda helper var
+        bool signedIn = false;
 
-        if (result.Succeeded)
+        try
         {
+            // 1) API ile doğrula
+            dto.EMail = loginInput.Email;
+            dto.Sifre = loginInput.Password;
+
+            GlobalValues.GlobalVariables._loginDTO = new RESTApi().GetResponse<LoginDTO>(
+                GlobalVariables._loginDTO.TokenId,
+                GlobalVariables._loginSirketDTO.Id,
+                "Kullanici", "DoLogin",
+                JsonConvert.SerializeObject(dto));
+
+            // 2) Identity’de oturum aç (PasswordSignInAsync kullanıyorsan
+            // Identity’deki parola gerçekten bu olmalı)
+            var result = await SignInManager.PasswordSignInAsync(
+                loginInput.Email, loginInput.Password, loginInput.RememberMe, lockoutOnFailure: false);
+
+            if (!result.Succeeded)
+            {
+                errorMessage = L["Password is incorrect."];
+                showPasswordstep = true;
+                return;
+            }
+
+            // 3) Temizlik
             Cache.Remove(nonce);
             context.Response.Cookies.Delete("login_nonce");
 
-            NavigationManager.NavigateTo(ReturnUrl ?? "/Account/Manage");
+            signedIn = true; // başarı
         }
-        else
+        catch (Exception ex) when (IsAuthError(ex))
         {
             errorMessage = L["Password is incorrect."];
             showPasswordstep = true;
+            return;
         }
+        catch (Exception ex)
+        {
+            return;
+        }
+
+        // 4) NAVİGASYON — try/catch DIŞINDA
+        if (signedIn)
+        {
+            await InvokeAsync(() => NavigationManager.NavigateTo(target, forceLoad: true));
+            return;
+            // (InvokeAsync kullanmazsan da olur; try/catch dışında olduğu sürece sorun yok.)
+        }
+    }
+
+    // YARDIMCI: geçerli ve güvenli ReturnUrl yoksa Manage’a gönder
+    private static string ResolveTarget(string? returnUrl)
+    {
+        if (string.IsNullOrWhiteSpace(returnUrl) || returnUrl == "/" ||
+            !Uri.TryCreate(returnUrl, UriKind.Relative, out _))
+        {
+            
+            return "/Account/Manage"; 
+        }
+        return returnUrl!;
+    }
+    private static bool IsAuthError(Exception ex)
+    {
+        var msg = ex.Message ?? string.Empty;
+        return msg.Contains("Sisteme Giriş Bilgilerinizi Kontrol Ediniz", StringComparison.OrdinalIgnoreCase)
+            || msg.Contains("Sisteme Giriş", StringComparison.OrdinalIgnoreCase)
+            || msg.Contains("Unauthorized", StringComparison.OrdinalIgnoreCase)
+            || msg.Contains("401");
     }
 
 }
