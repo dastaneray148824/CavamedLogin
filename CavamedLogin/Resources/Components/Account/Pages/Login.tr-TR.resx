@@ -168,7 +168,7 @@
   <data name="Surname" xml:space="preserve">
     <value>Soyisim</value>
   </data>
-  <data name="Şifre hatalı." xml:space="preserve">
+  <data name="Password is incorrect" xml:space="preserve">
     <value>Şifre hatalı.</value>
   </data>
   <data name="Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı." xml:space="preserve">

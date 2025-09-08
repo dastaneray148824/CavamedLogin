@@ -40,9 +40,9 @@
 
             <!-- EMAIL FORM -->
             <EditForm Model="@emailInput"
-                      FormName="EmailForm"
-                      OnValidSubmit="HandleEmailStep"
-                      style="@(showPasswordstep ? "display:none" : "block")">
+            FormName="EmailForm"
+            OnValidSubmit="HandleEmailStep"
+            style="@(showPasswordstep ? "display:none" : "block")">
 
                 <DataAnnotationsValidator />
 
@@ -60,10 +60,10 @@
                     <div class="right-pane">
                         <div class="form-floating mb-3">
                             <InputText @bind-Value="emailInput.Email"
-                                       id="email"
-                                       class="form-control pw-input"
-                                       autocomplete="username"
-                                       placeholder="e-posta" />
+                            id="email"
+                            class="form-control pw-input"
+                            autocomplete="username"
+                            placeholder="e-posta" />
                             <label for="email">@L["EMail"]</label>
                             <ValidationMessage For="@(() => emailInput.Email)" class="text-danger" />
                         </div>
@@ -73,16 +73,16 @@
                             <!-- Token'ı modele yazmak için hidden input -->
                             <!-- Turnstile widget -->
                             <div class="cf-turnstile"
-                                 data-sitekey="@CaptchaOptions.Value.SiteKey"
-                                 data-callback="cavamed.onTurnstileSuccess"
-                                 data-expired-callback="cavamed.onTurnstileExpired">
+                            data-sitekey="@CaptchaOptions.Value.SiteKey"
+                            data-callback="cavamed.onTurnstileSuccess"
+                            data-expired-callback="cavamed.onTurnstileExpired">
                             </div>
                         }
 
                         <div class="pw-actions">
                             <a class="forgot-link" href="/Account/Register">@L["Register"]</a>
                             <button id="btnEmailNext" type="submit"
-                                    class="btn next-btn">
+                            class="btn next-btn">
                                 @L["Next"]
                             </button>
                         </div>
@@ -92,9 +92,9 @@
 
             <!-- PASSWORD FORM -->
             <EditForm Model="@loginInput"
-                      FormName="PasswordForm"
-                      OnValidSubmit="HandlePasswordStep"
-                      style="@(showPasswordstep ? "block" : "display:none")">
+            FormName="PasswordForm"
+            OnValidSubmit="HandlePasswordStep"
+            style="@(showPasswordstep ? "block" : "display:none")">
 
                 <DataAnnotationsValidator />
 
@@ -117,11 +117,11 @@
 
                         <div class="form-floating mb-4">
                             <InputText @bind-Value="loginInput.Password"
-                                       id="password"
-                                       type="password"
-                                       class="form-control pw-input"
-                                       autocomplete="current-password"
-                                       placeholder="şifre" />
+                            id="password"
+                            type="password"
+                            class="form-control pw-input"
+                            autocomplete="current-password"
+                            placeholder="şifre" />
                             <label for="password">@L["Password"]</label>
 
                         </div>
@@ -154,7 +154,7 @@
 
 @code {
 
-    DTO.LoginDTO dto = new() { EMail = "", Sifre = "", LoginType = Enums.LoginType.Portal, BrowserEngine = Enums.BrowserEngine.Other, BrowserName = Enums.BrowserName.Other, UserAgent = "", KullaniciIP = "8.8.8.8", KullaniciCihaz = new DTO.KullaniciCihaz { Id = Tools.IdFactory.GetId, DeviceName = Enums.DeviceName.Android, DeviceType = Enums.DeviceType.Phone }, Lang = Enums.Lang.tr, };
+    DTO.LoginDTO dto = new() { EMail = "", Sifre = "", LoginType = Enums.LoginType.Portal, BrowserEngine = Enums.BrowserEngine.Other, BrowserName = Enums.BrowserName.Other, UserAgent = "", KullaniciIP = "8.8.8.8", KullaniciCihaz = new DTO.KullaniciCihaz { Id = Tools.IdFactory.GetId, DeviceName = Enums.DeviceName.Android, DeviceType = Enums.DeviceType.Desktop }, Lang = Enums.Lang.tr, };
 
 
 
@@ -322,19 +322,56 @@
             dto.EMail = loginInput.Email;
             dto.Sifre = loginInput.Password;
             GlobalValues.GlobalVariables._loginDTO = new Tools.RESTApi().GetResponse<LoginDTO>("", "", "Kullanici", "DoLogin", JsonConvert.SerializeObject(dto));
+
             Cache.Remove(nonce);
             context.Response.Cookies.Delete("login_nonce");
-            NavigationManager.NavigateTo(ReturnUrl ?? "/Account/Manage");
+            NavigationManager.NavigateTo("/Account/Manage");
+        }
+        catch (Exception ex) when (IsAuthError(ex))
+        {
+            var msg = ex.Message ?? string.Empty;
+
+            if (msg.Contains("Sisteme Giriş Bilgilerinizi Kontrol", StringComparison.OrdinalIgnoreCase) ||
+                msg.Contains("Şifre", StringComparison.OrdinalIgnoreCase) ||
+                msg.Contains("Unauthorized", StringComparison.OrdinalIgnoreCase) ||
+                msg.Contains("401"))
+            {
+                // ❌ İş kuralı hatası (yanlış şifre vs.)
+                errorMessage = L["Password is incorrect"];
+                showPasswordstep = true;
+            }
+            else
+            {
+                // 🚨 Teknik hata
+                _errorText = $"Hata oluştu: {ex.Message}";
+                _showError = true;
+                StateHasChanged(); // render tetikle
+            }
+
+            return; // kodu bitir
         }
         catch (Exception ex)
         {
+            // ⚠️ Teknik hata → üst paneli göster
             _errorText = $"Hata oluştu: {ex.Message}";
             _showError = true;
-            StateHasChanged(); // render tetikle
-            //Snackbar.Add($"Hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
-            // burada verilecek hata zaten RestApi de verilecek!
-            return; //kodu bitircek
+
+            // Alan altı mesajı temizle (isteğe bağlı)
+            errorMessage = null;
+
+            StateHasChanged();
+            return;
         }
+    }
+
+    private static bool IsAuthError(Exception ex)
+    {
+        var msg = ex.Message ?? string.Empty;
+        return msg.Contains("Sisteme Giriş Bilgilerinizi Kontrol Ediniz", StringComparison.OrdinalIgnoreCase)
+            || msg.Contains("Sisteme Giriş", StringComparison.OrdinalIgnoreCase)
+            || msg.Contains("Unauthorized", StringComparison.OrdinalIgnoreCase)
+            || msg.Contains("401");
+    }
 
         //var result = await SignInManager.PasswordSignInAsync(loginInput.Email, loginInput.Password, loginInput.RememberMe, lockoutOnFailure: false);
 
@@ -356,7 +393,7 @@
         //     errorMessage = L["Şifre hatalı."];
         //     showPasswordstep = true;
         // }
-    }
+   
 
 
     private async Task HandleSubmitAsync()
