@@ -2,10 +2,14 @@
 @layout EmptyLayout
 @using System.ComponentModel.DataAnnotations
 @using CavamedLogin.Data
+@using DTO
+@using GlobalValues
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Localization
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Http
+@using Newtonsoft.Json
+@using Tools
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
@@ -37,9 +41,9 @@
 
             <!-- EMAIL FORM -->
             <EditForm Model="@emailInput"
-                      FormName="EmailForm"
-                      OnValidSubmit="HandleEmailStep"
-                      style="@(showPasswordstep ? "display:none" : "block")">
+            FormName="EmailForm"
+            OnValidSubmit="HandleEmailStep"
+            style="@(showPasswordstep ? "display:none" : "block")">
 
                 <DataAnnotationsValidator />
 
@@ -57,10 +61,10 @@
                     <div class="right-pane">
                         <div class="form-floating mb-3">
                             <InputText @bind-Value="emailInput.Email"
-                                       id="email"
-                                       class="form-control pw-input"
-                                       autocomplete="username"
-                                       placeholder="e-posta" />
+                            id="email"
+                            class="form-control pw-input"
+                            autocomplete="username"
+                            placeholder="e-posta" />
                             <label for="email">@L["EMail"]</label>
                             <ValidationMessage For="@(() => emailInput.Email)" class="text-danger" />
                         </div>
@@ -70,16 +74,16 @@
                             <!-- Token'ı modele yazmak için hidden input -->
                             <!-- Turnstile widget -->
                             <div class="cf-turnstile"
-                                 data-sitekey="@CaptchaOptions.Value.SiteKey"
-                                 data-callback="cavamed.onTurnstileSuccess"
-                                 data-expired-callback="cavamed.onTurnstileExpired">
+                            data-sitekey="@CaptchaOptions.Value.SiteKey"
+                            data-callback="cavamed.onTurnstileSuccess"
+                            data-expired-callback="cavamed.onTurnstileExpired">
                             </div>
                         }
 
                         <div class="pw-actions">
                             <a class="forgot-link" href="/Account/Register">@L["Register"]</a>
                             <button id="btnEmailNext" type="submit"
-                                    class="btn next-btn">
+                            class="btn next-btn">
                                 @L["Next"]
                             </button>
                         </div>
@@ -89,9 +93,9 @@
 
             <!-- PASSWORD FORM -->
             <EditForm Model="@loginInput"
-                      FormName="PasswordForm"
-                      OnValidSubmit="HandlePasswordStep"
-                      style="@(showPasswordstep ? "block" : "display:none")">
+            FormName="PasswordForm"
+            OnValidSubmit="HandlePasswordStep"
+            style="@(showPasswordstep ? "block" : "display:none")">
 
                 <DataAnnotationsValidator />
 
@@ -114,11 +118,11 @@
 
                         <div class="form-floating mb-4">
                             <InputText @bind-Value="loginInput.Password"
-                                       id="password"
-                                       type="password"
-                                       class="form-control pw-input"
-                                       autocomplete="current-password"
-                                       placeholder="şifre" />
+                            id="password"
+                            type="password"
+                            class="form-control pw-input"
+                            autocomplete="current-password"
+                            placeholder="şifre" />
                             <label for="password">@L["Password"]</label>
 
                         </div>
@@ -150,8 +154,7 @@
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 @code {
-
-
+    LoginDTO dto = new() { EMail = "", Sifre = "", LoginType = Enums.LoginType.Portal, BrowserEngine = Enums.BrowserEngine.Other, BrowserName = Enums.BrowserName.Other, UserAgent = "", KullaniciIP = " 8.8.8.8", KullaniciCihaz = new KullaniciCihaz { Id = IdFactory.GetId, DeviceName = Enums.DeviceName.Android, DeviceType = Enums.DeviceType.Desktop }, Lang = Enums.Lang.tr };
     private const int EmailFailThreshold = 3; // 3 yanlış → CAPTCHA
     private string AttemptKey =>
         HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
@@ -160,6 +163,21 @@
     private bool showPasswordstep = false;
     private string? errorMessage;
     private InputText? passwordInput;
+
+    public class EmailInputModel
+    {
+
+        public string Email { get; set; } = string.Empty;
+
+        public string? CaptchaToken { get; set; } // sadece eşik aşıldıysa doldurulur
+    }
+
+    public class LoginInputModel
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+        public bool RememberMe { get; set; }
+    }
 
     [SupplyParameterFromForm(FormName = "EmailForm")]
     public EmailInputModel emailInput { get; set; } = new();
@@ -276,6 +294,8 @@
     // ADIM 2 → şifre girilince
     private async Task HandlePasswordStep()
     {
+
+
         if (string.IsNullOrEmpty(loginInput.Password))
         {
             errorMessage = L["PasswordRequired"];
@@ -283,6 +303,7 @@
             return;
         }
         ;
+
         var context = HttpContextAccessor.HttpContext!;
         if (!context.Request.Cookies.TryGetValue("login_nonce", out var nonce))
         {
@@ -300,6 +321,9 @@
 
 
         loginInput.Email = email;
+        dto.EMail = loginInput.Email;
+        dto.Sifre = loginInput.Password;
+        GlobalValues.GlobalVariables._loginDTO = new RESTApi().GetResponse<LoginDTO>(GlobalVariables._loginDTO.TokenId, GlobalVariables._loginSirketDTO.Id, "Kullanici", "DoLogin", JsonConvert.SerializeObject(dto));
 
         var result = await SignInManager.PasswordSignInAsync(loginInput.Email, loginInput.Password, loginInput.RememberMe, lockoutOnFailure: false);
 
@@ -310,32 +334,11 @@
 
             NavigationManager.NavigateTo(ReturnUrl ?? "/Account/Manage");
         }
-        else if (string.IsNullOrWhiteSpace(loginInput.Password))
-        {
-            errorMessage = L["PasswordRequired"]; // resx key
-            showPasswordstep = true;
-            return;
-        }
         else
         {
-            errorMessage = L["Şifre hatalı."];
+            errorMessage = L["Password is incorrect."];
             showPasswordstep = true;
         }
-    }
-
-    public class EmailInputModel
-    {
-
-        public string Email { get; set; } = string.Empty;
-
-        public string? CaptchaToken { get; set; } // sadece eşik aşıldıysa doldurulur
-    }
-
-    public class LoginInputModel
-    {
-        public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
-        public bool RememberMe { get; set; }
     }
 
 }

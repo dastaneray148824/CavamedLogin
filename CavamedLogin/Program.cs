@@ -64,6 +64,20 @@ builder.Services.AddScoped<ICaptchaVerifier>(sp => sp.GetRequiredService<Turnsti
 // Yanlýþ deneme sayacý
 builder.Services.AddSingleton<ILoginAttemptStore, MemoryLoginAttemptStore>();
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // ÞÝFRE
+    options.Password.RequireNonAlphanumeric = false;
+    // options.Password.RequireDigit = false;
+    // options.Password.RequireUppercase = false;
+    // options.Password.RequireLowercase = false;
+    // options.Password.RequiredLength = 6;
+
+    // KULLANICI ADI
+    options.User.AllowedUserNameCharacters =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ðüþöçÝýÐÜÞÖÇ ";
+});
+
 
 //builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Email"));
 //builder.Services.AddTransient<IEmailSender, SMTPEmailSender>();
